@@ -1,0 +1,49 @@
+{
+    "name": "timgavin/laravel-block",
+    "description": "A User can block another User",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tim Gavin",
+            "email": "tim@timgavin.name",
+            "homepage": "https://github.com/timgavin"
+        }
+    ],
+    "homepage": "https://github.com/timgavin/laravel-block",
+    "keywords": [
+        "Laravel",
+        "LaravelBlock",
+        "Block users"
+    ],
+    "require": {
+        "illuminate/support": "~9"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~9.0",
+        "orchestra/testbench": "~7"
+    },
+    "autoload": {
+        "psr-4": {
+            "TimGavin\\LaravelBlock\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TimGavin\\LaravelBlock\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-f": "vendor/bin/phpunit --filter"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TimGavin\\LaravelBlock\\LaravelBlockServiceProvider"
+            ],
+            "aliases": {
+                "LaravelBlock": "TimGavin\\LaravelBlock\\Facades\\LaravelBlock"
+            }
+        }
+    }
+}

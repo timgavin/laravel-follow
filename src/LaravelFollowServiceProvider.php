@@ -1,10 +1,10 @@
 <?php
 
-namespace TimGavin\LaravelBlock;
+namespace TimGavin\LaravelFollow;
 
 use Illuminate\Support\ServiceProvider;
 
-class LaravelBlockServiceProvider extends ServiceProvider
+class LaravelFollowServiceProvider extends ServiceProvider
 {
     /**
      * Perform post-registration booting of services.
@@ -27,11 +27,11 @@ class LaravelBlockServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/laravel-block.php', 'laravel-block');
+        $this->mergeConfigFrom(__DIR__.'/../config/laravel-follow.php', 'laravel-follow');
 
         // Register the service the package provides.
-        $this->app->singleton('laravel-block', function ($app) {
-            return new LaravelBlock;
+        $this->app->singleton('laravel-follow', function ($app) {
+            return new LaravelFollow;
         });
     }
 
@@ -42,7 +42,7 @@ class LaravelBlockServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return ['laravel-block'];
+        return ['laravel-follow'];
     }
 
     /**

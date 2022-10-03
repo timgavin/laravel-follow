@@ -1,11 +1,11 @@
-# Laravel Block
+# Laravel Follow
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
 [![Build Status][ico-travis]][link-travis]
 [![StyleCI][ico-styleci]][link-styleci]
 
-A simple Laravel package for blocking users.
+A simple Laravel package for following users.
 
 ## Requirements
 - Laravel 9 or greater.
@@ -16,19 +16,19 @@ A simple Laravel package for blocking users.
 Via Composer
 
 ``` bash
-$ composer require timgavin/laravel-block
+$ composer require timgavin/laravel-follow
 ```
 
-Import Laravel Block into your User model and add the trait.
+Import Laravel Follow into your User model and add the trait.
 
 ```php
 namespace App\Models;
 
-use TimGavin\LaravelBlock\LaravelBlock;
+use TimGavin\LaravelFollow\LaravelFollow;
 
 class User extends Authenticatable
 {
-    use LaravelBlock;
+    use LaravelFollow;
 }
 ```
 
@@ -40,48 +40,48 @@ php artisan migrate
 
 ## Usage
 
-Block a user
+Follow a user
 ```php
-auth()->user()->block($user);
+auth()->user()->follow($user);
 ```
 
-Unblock a user
+Unfollow a user
 ```php
-auth()->user()->unblock($user);
+auth()->user()->unfollow($user);
 ```
 
-Check if a user is blocking another user
+Check if a user is following another user
 ```php
-@if (auth()->user()->isBlocking($user))
-    You are blocking this user.
+@if (auth()->user()->isFollowing($user))
+    You are following this user.
 @endif
 ```
 
-Check if a user is blocked by another user
+Check if a user is followed by another user
 ```php
-@if (auth()->user()->isBlockedBy($user))
-    This user is blocking you.
+@if (auth()->user()->isFollowedBy($user))
+    This user is following you.
 @endif
 ```
 
-Returns the users a user is blocking
+Returns the users a user is following
 ```php
-auth()->user()->getBlocking();
+auth()->user()->getFollowing();
 ```
 
-Returns an array of IDs of the users a user is blocking
+Returns an array of IDs of the users a user is following
 ```php
-auth()->user()->getBlockingIds();
+auth()->user()->getFollowingIds();
 ```
 
-Returns the users who are blocking a user
+Returns the users who are following a user
 ```php
-auth()->user()->getBlockers();
+auth()->user()->getFollowers();
 ```
 
-Returns an array of IDs of the users who are blocking a user
+Returns an array of IDs of the users who are following a user
 ```php
-auth()->user()->getBlockersIds();
+auth()->user()->getFollowersIds();
 ```
 
 ## Change log
@@ -102,14 +102,14 @@ If you discover any security related issues, please email tim@timgavin.name inst
 
 MIT. Please see the [license file](license.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/timgavin/laravel-block.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/timgavin/laravel-block.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/timgavin/laravel-block/master.svg?style=flat-square
+[ico-version]: https://img.shields.io/packagist/v/timgavin/laravel-follow.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/timgavin/laravel-follow.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/timgavin/laravel-follow/master.svg?style=flat-square
 [ico-styleci]: https://styleci.io/repos/545076824/shield
 
-[link-packagist]: https://packagist.org/packages/timgavin/laravel-block
-[link-downloads]: https://packagist.org/packages/timgavin/laravel-block
-[link-travis]: https://travis-ci.org/timgavin/laravel-block
+[link-packagist]: https://packagist.org/packages/timgavin/laravel-follow
+[link-downloads]: https://packagist.org/packages/timgavin/laravel-follow
+[link-travis]: https://travis-ci.org/timgavin/laravel-follow
 [link-styleci]: https://styleci.io/repos/545076824
 [link-author]: https://github.com/timgavin
 [link-contributors]: ../../contributors

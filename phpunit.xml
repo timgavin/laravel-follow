@@ -6,7 +6,7 @@
     </include>
   </coverage>
   <testsuites>
-    <testsuite name="Laravel Block Test Suite">
+    <testsuite name="Laravel Follow Test Suite">
       <directory suffix=".php">tests/</directory>
     </testsuite>
   </testsuites>

@@ -1,8 +1,8 @@
 <?php
 
-namespace TimGavin\LaravelBlock\Tests;
+namespace TimGavin\LaravelFollow\Tests;
 
-use TimGavin\LaravelBlock\LaravelBlockServiceProvider;
+use TimGavin\LaravelFollow\LaravelFollowServiceProvider;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -14,7 +14,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            LaravelBlockServiceProvider::class,
+            LaravelFollowServiceProvider::class,
         ];
     }
 

@@ -1,13 +1,13 @@
 <?php
 
-namespace TimGavin\LaravelBlock\Models;
+namespace TimGavin\LaravelFollow\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use TimGavin\LaravelBlock\LaravelBlock;
+use TimGavin\LaravelFollow\LaravelFollow;
 
 class User extends Model
 {
-    use LaravelBlock;
+    use LaravelFollow;
 
     public $timestamps = false;
 

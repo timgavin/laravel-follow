@@ -1,6 +1,6 @@
 {
-    "name": "timgavin/laravel-block",
-    "description": "A User can block another User",
+    "name": "timgavin/laravel-follow",
+    "description": "A User can follow another User",
     "license": "MIT",
     "authors": [
         {
@@ -9,11 +9,11 @@
             "homepage": "https://github.com/timgavin"
         }
     ],
-    "homepage": "https://github.com/timgavin/laravel-block",
+    "homepage": "https://github.com/timgavin/laravel-follow",
     "keywords": [
         "Laravel",
-        "LaravelBlock",
-        "Block users"
+        "LaravelFollow",
+        "Follow users"
     ],
     "require": {
         "illuminate/support": "~9"
@@ -24,12 +24,12 @@
     },
     "autoload": {
         "psr-4": {
-            "TimGavin\\LaravelBlock\\": "src/"
+            "TimGavin\\LaravelFollow\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "TimGavin\\LaravelBlock\\Tests\\": "tests"
+            "TimGavin\\LaravelFollow\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -39,10 +39,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "TimGavin\\LaravelBlock\\LaravelBlockServiceProvider"
+                "TimGavin\\LaravelFollow\\LaravelFollowServiceProvider"
             ],
             "aliases": {
-                "LaravelBlock": "TimGavin\\LaravelBlock\\Facades\\LaravelBlock"
+                "LaravelFollow": "TimGavin\\LaravelFollow\\Facades\\LaravelFollow"
             }
         }
     }

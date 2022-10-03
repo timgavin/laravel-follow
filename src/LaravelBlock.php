@@ -88,7 +88,7 @@ trait LaravelBlock
      *
      * @return array
      */
-    public function getBlockedBy()
+    public function getBlockers()
     {
         return Block::where('blocking_id', $this->id)
             ->with('blockers')
@@ -100,7 +100,7 @@ trait LaravelBlock
      *
      * @return array
      */
-    public function getBlockedByIds()
+    public function getBlockersIds()
     {
         return Block::where('blocking_id', $this->id)
             ->with('blockers')

@@ -7,7 +7,9 @@
 
 A simple Laravel package for blocking users.
 
-Uses the default `User` class that ships with Laravel.
+## Requirements
+- Laravel 9 or greater.
+- Laravel `User` model.
 
 ## Installation
 
@@ -74,12 +76,12 @@ auth()->user()->getBlockingIds();
 
 Returns the users who are blocking a user
 ```php
-auth()->user()->getBlockedBy();
+auth()->user()->getBlockers();
 ```
 
 Returns an array of IDs of the users who are blocking a user
 ```php
-auth()->user()->getBlockedByIds();
+auth()->user()->getBlockersIds();
 ```
 
 ## Change log
@@ -103,11 +105,11 @@ MIT. Please see the [license file](license.md) for more information.
 [ico-version]: https://img.shields.io/packagist/v/timgavin/laravel-block.svg?style=flat-square
 [ico-downloads]: https://img.shields.io/packagist/dt/timgavin/laravel-block.svg?style=flat-square
 [ico-travis]: https://img.shields.io/travis/timgavin/laravel-block/master.svg?style=flat-square
-[ico-styleci]: https://styleci.io/repos/12345678/shield
+[ico-styleci]: https://styleci.io/repos/545076824/shield
 
 [link-packagist]: https://packagist.org/packages/timgavin/laravel-block
 [link-downloads]: https://packagist.org/packages/timgavin/laravel-block
 [link-travis]: https://travis-ci.org/timgavin/laravel-block
-[link-styleci]: https://styleci.io/repos/12345678
+[link-styleci]: https://styleci.io/repos/545076824
 [link-author]: https://github.com/timgavin
 [link-contributors]: ../../contributors

@@ -109,7 +109,7 @@ class BlockTest extends TestCase
 
         $user2->block($user1);
 
-        $blockedBy = $user1->getBlockedBy();
+        $blockedBy = $user1->getBlockers();
 
         foreach ($blockedBy as $item) {
             if ($item->blocking->id === 1) {
@@ -128,7 +128,7 @@ class BlockTest extends TestCase
 
         $user2->block($user1);
 
-        $blockedByIds = $user1->getBlockedByIds();
+        $blockedByIds = $user1->getBlockersIds();
 
         $this->assertContains(2, $blockedByIds);
     }

@@ -4,7 +4,6 @@ namespace TimGavin\LaravelBlock\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use TimGavin\LaravelBlock\Models\User;
-use TimGavin\LaravelBlock\Tests\TestCase;
 
 class BlockTest extends TestCase
 {

@@ -2,14 +2,14 @@
 
 namespace TimGavin\LaravelBlock;
 
-use \TimGavin\LaravelBlock\Models\Block;
+use TimGavin\LaravelBlock\Models\Block;
 
 trait LaravelBlock
 {
     /**
-     * Block the given user
+     * Block the given user.
      *
-     * @param  \App\Models\User $user
+     * @param  \App\Models\User  $user
      * @return void
      */
     public function block($user)
@@ -21,9 +21,9 @@ trait LaravelBlock
     }
 
     /**
-     * Unblock the given user
+     * Unblock the given user.
      *
-     * @param  \App\Models\User $user
+     * @param  \App\Models\User  $user
      * @return void
      */
     public function unblock($user)
@@ -34,9 +34,9 @@ trait LaravelBlock
     }
 
     /**
-     * Check if a user is blocking the given user
+     * Check if a user is blocking the given user.
      *
-     * @param  \App\Models\User $user
+     * @param  \App\Models\User  $user
      * @return void
      */
     public function isBlocking($user)
@@ -47,9 +47,9 @@ trait LaravelBlock
     }
 
     /**
-     * Check if a user is blocked by the given user
+     * Check if a user is blocked by the given user.
      *
-     * @param  \App\Models\User $user
+     * @param  \App\Models\User  $user
      * @return void
      */
     public function isBlockedBy($user)
@@ -60,7 +60,7 @@ trait LaravelBlock
     }
 
     /**
-     * Returns the users a user is blocking
+     * Returns the users a user is blocking.
      *
      * @return array
      */
@@ -72,7 +72,7 @@ trait LaravelBlock
     }
 
     /**
-     * Returns IDs of the users a user is blocking
+     * Returns IDs of the users a user is blocking.
      *
      * @return array
      */
@@ -84,7 +84,7 @@ trait LaravelBlock
     }
 
     /**
-     * Returns the users who are blocking a user
+     * Returns the users who are blocking a user.
      *
      * @return array
      */
@@ -96,7 +96,7 @@ trait LaravelBlock
     }
 
     /**
-     * Returns IDs of the users who are blocking a user
+     * Returns IDs of the users who are blocking a user.
      *
      * @return array
      */

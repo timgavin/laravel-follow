@@ -21,4 +21,4 @@ class CreateBlocksTable extends Migration
     {
         Schema::dropIfExists('blocks');
     }
-};
+}

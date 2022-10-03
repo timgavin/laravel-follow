@@ -17,7 +17,7 @@ class Block extends Model
     ];
 
     /**
-     * Returns who a user is blocking
+     * Returns who a user is blocking.
      *
      * @return void
      */
@@ -27,7 +27,7 @@ class Block extends Model
     }
 
     /**
-     * Returns who is blocking a user
+     * Returns who is blocking a user.
      *
      * @return void
      */

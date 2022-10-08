@@ -41,7 +41,8 @@ trait LaravelFollow
      */
     public function isFollowing($user)
     {
-        return Follow::where('user_id', $this->id)
+        return Follow::toBase()
+            ->where('user_id', $this->id)
             ->where('following_id', $user->id)
             ->first();
     }
@@ -54,7 +55,8 @@ trait LaravelFollow
      */
     public function isFollowedBy($user)
     {
-        return Follow::where('user_id', $user->id)
+        return Follow::toBase()
+            ->where('user_id', $user->id)
             ->where('following_id', $this->id)
             ->first();
     }
@@ -78,9 +80,10 @@ trait LaravelFollow
      */
     public function getFollowingIds()
     {
-        return Follow::where('user_id', $this->id)
-            ->with('following')
-            ->pluck('following_id');
+        return Follow::toBase()
+            ->where('user_id', $this->id)
+            ->pluck('following_id')
+            ->toArray();
     }
 
     /**
@@ -102,8 +105,9 @@ trait LaravelFollow
      */
     public function getFollowersIds()
     {
-        return Follow::where('following_id', $this->id)
-            ->with('followers')
-            ->pluck('user_id');
+        return Follow::toBase()
+            ->where('following_id', $this->id)
+            ->pluck('user_id')
+            ->toArray();
     }
 }

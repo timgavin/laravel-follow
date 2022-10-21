@@ -2,6 +2,7 @@
 
 namespace TimGavin\LaravelFollow;
 
+use Carbon\Carbon;
 use TimGavin\LaravelFollow\Models\Follow;
 
 trait LaravelFollow
@@ -109,5 +110,32 @@ trait LaravelFollow
             ->where('following_id', $this->id)
             ->pluck('user_id')
             ->toArray();
+    }
+
+    /**
+     * Caches IDs of the users a user is following.
+     *
+     * @param mixed
+     * @return array
+     */
+    public function cacheFollowing($duration = null)
+    {
+        $duration ?? Carbon::now()->addDay();
+
+        cache()->forget('following.' . auth()->id());
+
+        cache()->remember('following.' . auth()->id(), $duration, function () {
+            return auth()->user()->getFollowingIds();
+        });
+    }
+
+    /**
+     * Returns IDs of the users a user is following.
+     *
+     * @return array
+     */
+    public function getFollowingCache()
+    {
+        return cache()->get('following.' . auth()->id()) ?? [];
     }
 }

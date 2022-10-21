@@ -84,6 +84,33 @@ Returns an array of IDs of the users who are following a user
 auth()->user()->getFollowersIds();
 ```
 
+Caches the IDs of the users a user is following. Default is 1 day.
+```php
+// 1 day
+auth()->user()->cacheFollowing();
+
+// 1 hour
+auth()->user()->cacheFollowing(3600);
+
+// 1 month
+auth()->user()->cacheFollowing(Carbon::addMonth());
+```
+
+Returns an array of IDs of the users a user is following.
+```php
+auth()->user()->getFollowingCache();
+```
+
+Caches the IDs of the users who are following a user. Default is 1 day.
+```php
+auth()->user()->cacheFollowers();
+```
+
+Returns an array of IDs of the users who are following a user.
+```php
+auth()->user()->getFollowersCache();
+```
+
 ## Change log
 
 Please see the [changelog](changelog.md) for more information on what has changed recently.

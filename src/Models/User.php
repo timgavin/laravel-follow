@@ -2,10 +2,10 @@
 
 namespace TimGavin\LaravelFollow\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use TimGavin\LaravelFollow\LaravelFollow;
 
-class User extends Model
+class User extends Authenticatable
 {
     use LaravelFollow;
 

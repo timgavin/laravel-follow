@@ -2,6 +2,9 @@
 
 All notable changes to `Laravel Follow` will be documented in this file.
 
+## Version 1.1.1
+- Added a .gitattributes file
+
 ## Version 1.1
 - Added caching methods
 - Updated StyleCI presets

@@ -3,7 +3,6 @@
 namespace TimGavin\LaravelFollow\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use TimGavin\LaravelFollow\Models\User;
 
 class FollowTest extends TestCase

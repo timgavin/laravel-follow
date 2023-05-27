@@ -38,7 +38,7 @@ trait LaravelFollow
      * Check if a user is following the given user.
      *
      * @param  \App\Models\User  $user
-     * @return boolean
+     * @return bool
      */
     public function isFollowing($user): bool
     {
@@ -58,7 +58,7 @@ trait LaravelFollow
      * Check if a user is followed by the given user.
      *
      * @param  \App\Models\User  $user
-     * @return boolean
+     * @return bool
      */
     public function isFollowedBy($user): bool
     {

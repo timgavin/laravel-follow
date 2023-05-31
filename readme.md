@@ -69,19 +69,24 @@ Returns the users a user is following
 auth()->user()->getFollowing();
 ```
 
-Returns an array of IDs of the users a user is following
-```php
-auth()->user()->getFollowingIds();
-```
-
 Returns the users who are following a user
 ```php
 auth()->user()->getFollowers();
 ```
 
+Returns an array of IDs of the users a user is following
+```php
+auth()->user()->getFollowingIds();
+```
+
 Returns an array of IDs of the users who are following a user
 ```php
 auth()->user()->getFollowersIds();
+```
+
+Returns an array of IDs of the users a user is following, and who is following a user
+```php
+auth()->user()->getFollowingAndFollowersIds()
 ```
 
 Caches the IDs of the users a user is following. Default is 1 day.
@@ -109,6 +114,16 @@ auth()->user()->cacheFollowers();
 Returns an array of IDs of the users who are following a user.
 ```php
 auth()->user()->getFollowersCache();
+```
+
+Clears the Following cache
+```php
+auth()->user()->clearFollowingCache();
+```
+
+Clears the Followers cache
+```php
+auth()->user()->clearFollowersCache();
 ```
 
 ## Change log

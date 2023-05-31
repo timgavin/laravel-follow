@@ -27,12 +27,7 @@ class LaravelFollowServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/laravel-follow.php', 'laravel-follow');
-
-        // Register the service the package provides.
-        $this->app->singleton('laravel-follow', function ($app) {
-            return new LaravelFollow;
-        });
+        //
     }
 
     /**

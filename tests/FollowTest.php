@@ -49,7 +49,7 @@ class FollowTest extends TestCase
         if ($user1->isFollowing($user2)) {
             $this->assertTrue(true);
         } else {
-            $this->assertTrue(false);
+            $this->fail();
         }
     }
 
@@ -64,7 +64,7 @@ class FollowTest extends TestCase
         if ($user2->isFollowedBy($user1)) {
             $this->assertTrue(true);
         } else {
-            $this->assertTrue(false);
+            $this->fail();
         }
     }
 
@@ -82,7 +82,7 @@ class FollowTest extends TestCase
             if ($item->following->id === 2) {
                 $this->assertTrue(true);
             } else {
-                $this->assertTrue(false);
+                $this->fail();
             }
         }
     }
@@ -114,7 +114,7 @@ class FollowTest extends TestCase
             if ($item->following->id === 1) {
                 $this->assertTrue(true);
             } else {
-                $this->assertTrue(false);
+                $this->fail();
             }
         }
     }
@@ -158,5 +158,81 @@ class FollowTest extends TestCase
         auth()->user()->cacheFollowing();
 
         $this->assertContains(2, auth()->user()->getFollowingCache());
+    }
+
+    /** @test */
+    public function it_caches_the_ids_of_users_who_are_following_a_user()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user2->follow($user1);
+
+        $this->actingAs($user1);
+
+        auth()->user()->cacheFollowers();
+
+        $this->assertContains(2, cache('followers.' . auth()->id()));
+    }
+
+    /** @test */
+    public function it_gets_the_cached_ids_of_users_who_are_following_a_user()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user2->follow($user1);
+
+        $this->actingAs($user1);
+
+        auth()->user()->cacheFollowers();
+
+        $this->assertContains(2, auth()->user()->getFollowersCache());
+    }
+
+    /** @test */
+    public function it_clears_the_cached_ids_of_users_who_are_followed_by_a_user()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user2->follow($user1);
+
+        $this->actingAs($user1);
+
+        auth()->user()->cacheFollowing();
+
+        auth()->user()->clearFollowingCache();
+
+        $cache = auth()->user()->getFollowingCache();
+
+        if (empty($cache)) {
+            $this->assertTrue(true);
+        } else {
+            $this->fail();
+        }
+    }
+
+    /** @test */
+    public function it_clears_the_cached_ids_of_users_who_are_following_a_user()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user2->follow($user1);
+
+        $this->actingAs($user1);
+
+        auth()->user()->cacheFollowers();
+
+        auth()->user()->clearFollowersCache();
+
+        $cache = auth()->user()->getFollowersCache();
+
+        if (empty($cache)) {
+            $this->assertTrue(true);
+        } else {
+            $this->fail();
+        }
     }
 }

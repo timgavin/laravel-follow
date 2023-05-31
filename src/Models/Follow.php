@@ -4,6 +4,7 @@ namespace TimGavin\LaravelFollow\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Follow extends Model
 {
@@ -19,20 +20,20 @@ class Follow extends Model
     /**
      * Returns who a user is following.
      *
-     * @return void
+     * @return BelongsTo
      */
-    public function following()
+    public function following(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'following_id');
+        return $this->belongsTo(config('auth.providers.users.model'), 'following_id');
     }
 
     /**
      * Returns who is following a user.
      *
-     * @return void
+     * @return BelongsTo
      */
-    public function followers()
+    public function followers(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(config('auth.providers.users.model'), 'user_id');
     }
 }

@@ -149,7 +149,7 @@ trait LaravelFollow
     /**
      * Caches IDs of the users a user is following.
      *
-     * @param mixed $duration
+     * @param  mixed  $duration
      * @return void
      */
     public function cacheFollowing(mixed $duration = null): void
@@ -166,7 +166,7 @@ trait LaravelFollow
     /**
      * Caches IDs of the users who are following a user.
      *
-     * @param mixed|null $duration
+     * @param  mixed|null  $duration
      * @return void
      */
     public function cacheFollowers(mixed $duration = null): void
@@ -184,6 +184,7 @@ trait LaravelFollow
      * Returns the cached IDs of the users a user is following.
      *
      * @return array
+     *
      * @throws
      */
     public function getFollowingCache(): array
@@ -195,6 +196,7 @@ trait LaravelFollow
      * Returns the cached IDs of the users who are followers a user.
      *
      * @return array
+     *
      * @throws
      */
     public function getFollowersCache(): array

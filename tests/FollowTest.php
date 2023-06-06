@@ -24,6 +24,20 @@ class FollowTest extends TestCase
     }
 
     /** @test */
+    public function a_user_can_follow_another_user_by_id()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user1->follow($user2->id);
+
+        $this->assertDatabaseHas('follows', [
+            'user_id' => 1,
+            'following_id' => 2,
+        ]);
+    }
+
+    /** @test */
     public function a_user_can_unfollow_another_user()
     {
         $user1 = User::create();
@@ -31,6 +45,21 @@ class FollowTest extends TestCase
 
         $user1->follow($user2);
         $user1->unfollow($user2);
+
+        $this->assertDatabaseMissing('follows', [
+            'user_id' => 1,
+            'following_id' => 2,
+        ]);
+    }
+
+    /** @test */
+    public function a_user_can_unfollow_another_user_by_id()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user1->follow($user2->id);
+        $user1->unfollow($user2->id);
 
         $this->assertDatabaseMissing('follows', [
             'user_id' => 1,
@@ -54,6 +83,21 @@ class FollowTest extends TestCase
     }
 
     /** @test */
+    public function is_a_user_following_another_user_by_id()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user1->follow($user2->id);
+
+        if ($user1->isFollowing($user2->id)) {
+            $this->assertTrue(true);
+        } else {
+            $this->fail();
+        }
+    }
+
+    /** @test */
     public function is_a_user_followed_by_another_user()
     {
         $user1 = User::create();
@@ -62,6 +106,21 @@ class FollowTest extends TestCase
         $user1->follow($user2);
 
         if ($user2->isFollowedBy($user1)) {
+            $this->assertTrue(true);
+        } else {
+            $this->fail();
+        }
+    }
+
+    /** @test */
+    public function is_a_user_followed_by_another_user_by_id()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user1->follow($user2->id);
+
+        if ($user2->isFollowedBy($user1->id)) {
             $this->assertTrue(true);
         } else {
             $this->fail();

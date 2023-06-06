@@ -10,41 +10,47 @@ trait LaravelFollow
     /**
      * Follow the given user.
      *
-     * @param  \App\Models\User  $user
+     * @param  mixed  $user
      * @return void
      */
-    public function follow($user): void
+    public function follow(mixed $user): void
     {
+        $user_id = is_int($user) ? $user : $user->id;
+
         Follow::firstOrCreate([
             'user_id' => $this->id,
-            'following_id' => $user->id,
+            'following_id' => $user_id,
         ]);
     }
 
     /**
      * Unfollow the given user.
      *
-     * @param  \App\Models\User  $user
+     * @param  mixed  $user
      * @return void
      */
-    public function unfollow($user): void
+    public function unfollow(mixed $user): void
     {
+        $user_id = is_int($user) ? $user : $user->id;
+
         Follow::where('user_id', $this->id)
-            ->where('following_id', $user->id)
+            ->where('following_id', $user_id)
             ->delete();
     }
 
     /**
      * Check if a user is following the given user.
      *
-     * @param  \App\Models\User  $user
+     * @param  mixed  $user
      * @return bool
      */
-    public function isFollowing($user): bool
+    public function isFollowing(mixed $user): bool
     {
+        $user_id = is_int($user) ? $user : $user->id;
+
         $isFollowing = Follow::toBase()
             ->where('user_id', $this->id)
-            ->where('following_id', $user->id)
+            ->where('following_id', $user_id)
             ->first();
 
         if ($isFollowing) {
@@ -57,13 +63,15 @@ trait LaravelFollow
     /**
      * Check if a user is followed by the given user.
      *
-     * @param  \App\Models\User  $user
+     * @param  mixed  $user
      * @return bool
      */
-    public function isFollowedBy($user): bool
+    public function isFollowedBy(mixed $user): bool
     {
+        $user_id = is_int($user) ? $user : $user->id;
+
         $isFollowedBy = Follow::toBase()
-            ->where('user_id', $user->id)
+            ->where('user_id', $user_id)
             ->where('following_id', $this->id)
             ->first();
 
@@ -77,9 +85,9 @@ trait LaravelFollow
     /**
      * Returns the users a user is following.
      *
-     * @return Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getFollowing()
+    public function getFollowing(): \Illuminate\Database\Eloquent\Collection
     {
         return Follow::where('user_id', $this->id)
             ->with('following')
@@ -89,9 +97,9 @@ trait LaravelFollow
     /**
      * Returns the users who are following a user.
      *
-     * @return Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getFollowers()
+    public function getFollowers(): \Illuminate\Database\Eloquent\Collection
     {
         return Follow::where('following_id', $this->id)
             ->with('followers')
@@ -141,10 +149,10 @@ trait LaravelFollow
     /**
      * Caches IDs of the users a user is following.
      *
-     * @param mixed
+     * @param mixed $duration
      * @return void
      */
-    public function cacheFollowing($duration = null): void
+    public function cacheFollowing(mixed $duration = null): void
     {
         $duration ?? Carbon::now()->addDay();
 
@@ -158,10 +166,10 @@ trait LaravelFollow
     /**
      * Caches IDs of the users who are following a user.
      *
-     * @param mixed
+     * @param mixed|null $duration
      * @return void
      */
-    public function cacheFollowers($duration = null): void
+    public function cacheFollowers(mixed $duration = null): void
     {
         $duration ?? Carbon::now()->addDay();
 
@@ -176,6 +184,7 @@ trait LaravelFollow
      * Returns the cached IDs of the users a user is following.
      *
      * @return array
+     * @throws
      */
     public function getFollowingCache(): array
     {
@@ -186,6 +195,7 @@ trait LaravelFollow
      * Returns the cached IDs of the users who are followers a user.
      *
      * @return array
+     * @throws
      */
     public function getFollowersCache(): array
     {

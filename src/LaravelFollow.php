@@ -48,6 +48,14 @@ trait LaravelFollow
     {
         $user_id = is_int($user) ? $user : $user->id;
 
+        if (cache()->has('following.'.$this->id)) {
+            if (in_array($user_id, $this->getFollowingCache())) {
+                return true;
+            }
+
+            return false;
+        }
+
         $isFollowing = Follow::toBase()
             ->where('user_id', $this->id)
             ->where('following_id', $user_id)
@@ -69,6 +77,14 @@ trait LaravelFollow
     public function isFollowedBy(mixed $user): bool
     {
         $user_id = is_int($user) ? $user : $user->id;
+
+        if (cache()->has('following.'.$this->id)) {
+            if (in_array($user_id, $this->getFollowersCache())) {
+                return true;
+            }
+
+            return false;
+        }
 
         $isFollowedBy = Follow::toBase()
             ->where('user_id', $user_id)
@@ -149,16 +165,16 @@ trait LaravelFollow
     /**
      * Caches IDs of the users a user is following.
      *
-     * @param mixed $duration
+     * @param  mixed  $duration
      * @return void
      */
     public function cacheFollowing(mixed $duration = null): void
     {
-        $duration ?? Carbon::now()->addDay();
+            $duration ?? Carbon::now()->addDay();
 
-        cache()->forget('following.' . auth()->id());
+        cache()->forget('following.'.auth()->id());
 
-        cache()->remember('following.' . auth()->id(), $duration, function () {
+        cache()->remember('following.'.auth()->id(), $duration, function () {
             return auth()->user()->getFollowingIds();
         });
     }
@@ -166,16 +182,16 @@ trait LaravelFollow
     /**
      * Caches IDs of the users who are following a user.
      *
-     * @param mixed|null $duration
+     * @param  mixed|null  $duration
      * @return void
      */
     public function cacheFollowers(mixed $duration = null): void
     {
-        $duration ?? Carbon::now()->addDay();
+            $duration ?? Carbon::now()->addDay();
 
-        cache()->forget('followers.' . auth()->id());
+        cache()->forget('followers.'.auth()->id());
 
-        cache()->remember('followers.' . auth()->id(), $duration, function () {
+        cache()->remember('followers.'.auth()->id(), $duration, function () {
             return auth()->user()->getFollowersIds();
         });
     }
@@ -188,7 +204,7 @@ trait LaravelFollow
      */
     public function getFollowingCache(): array
     {
-        return cache()->get('following.' . auth()->id()) ?? [];
+        return cache()->get('following.'.auth()->id()) ?? [];
     }
 
     /**
@@ -199,7 +215,7 @@ trait LaravelFollow
      */
     public function getFollowersCache(): array
     {
-        return cache()->get('followers.' . auth()->id()) ?? [];
+        return cache()->get('followers.'.auth()->id()) ?? [];
     }
 
     /**
@@ -209,7 +225,7 @@ trait LaravelFollow
      */
     public function clearFollowingCache(): void
     {
-        cache()->forget('following.' . auth()->id());
+        cache()->forget('following.'.auth()->id());
     }
 
     /**
@@ -219,6 +235,6 @@ trait LaravelFollow
      */
     public function clearFollowersCache(): void
     {
-        cache()->forget('followers.' . auth()->id());
+        cache()->forget('followers.'.auth()->id());
     }
 }

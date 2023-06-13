@@ -83,6 +83,24 @@ class FollowTest extends TestCase
     }
 
     /** @test */
+    public function is_a_user_following_another_user_in_cache()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $this->actingAs($user1);
+
+        auth()->user()->follow($user2);
+        auth()->user()->cacheFollowing();
+
+        if ($user1->isFollowing($user2)) {
+            $this->assertTrue(true);
+        } else {
+            $this->fail();
+        }
+    }
+
+    /** @test */
     public function is_a_user_following_another_user_by_id()
     {
         $user1 = User::create();
@@ -106,6 +124,25 @@ class FollowTest extends TestCase
         $user1->follow($user2);
 
         if ($user2->isFollowedBy($user1)) {
+            $this->assertTrue(true);
+        } else {
+            $this->fail();
+        }
+    }
+
+    /** @test */
+    public function is_a_user_followed_by_another_user_in_cache()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user2->follow($user1);
+
+        $this->actingAs($user1);
+
+        auth()->user()->cacheFollowers();
+
+        if (auth()->user()->isFollowedBy($user2)) {
             $this->assertTrue(true);
         } else {
             $this->fail();

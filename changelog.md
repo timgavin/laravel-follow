@@ -2,6 +2,10 @@
 
 All notable changes to `Laravel Follow` will be documented in this file.
 
+## Version 1.1.7
+
+- Updated caching methods
+
 ## Version 1.1.6
 
 - You can now follow/unfollow by User ID

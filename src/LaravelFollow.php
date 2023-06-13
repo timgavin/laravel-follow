@@ -200,6 +200,7 @@ trait LaravelFollow
      * Returns the cached IDs of the users a user is following.
      *
      * @return array
+     *
      * @throws
      */
     public function getFollowingCache(): array
@@ -211,6 +212,7 @@ trait LaravelFollow
      * Returns the cached IDs of the users who are followers a user.
      *
      * @return array
+     *
      * @throws
      */
     public function getFollowersCache(): array

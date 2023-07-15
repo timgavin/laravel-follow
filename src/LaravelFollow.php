@@ -9,8 +9,7 @@ trait LaravelFollow
 {
     /**
      * Follow the given user.
-     *
-     * @param  mixed  $user
+     * @param mixed $user
      * @return void
      */
     public function follow(mixed $user): void
@@ -25,8 +24,7 @@ trait LaravelFollow
 
     /**
      * Unfollow the given user.
-     *
-     * @param  mixed  $user
+     * @param mixed $user
      * @return void
      */
     public function unfollow(mixed $user): void
@@ -40,15 +38,14 @@ trait LaravelFollow
 
     /**
      * Check if a user is following the given user.
-     *
-     * @param  mixed  $user
+     * @param mixed $user
      * @return bool
      */
     public function isFollowing(mixed $user): bool
     {
         $user_id = is_int($user) ? $user : $user->id;
 
-        if (cache()->has('following.'.$this->id)) {
+        if (cache()->has('following.' . $this->id)) {
             if (in_array($user_id, $this->getFollowingCache())) {
                 return true;
             }
@@ -70,15 +67,14 @@ trait LaravelFollow
 
     /**
      * Check if a user is followed by the given user.
-     *
-     * @param  mixed  $user
+     * @param mixed $user
      * @return bool
      */
     public function isFollowedBy(mixed $user): bool
     {
         $user_id = is_int($user) ? $user : $user->id;
 
-        if (cache()->has('following.'.$this->id)) {
+        if (cache()->has('followers.' . $user_id)) {
             if (in_array($user_id, $this->getFollowersCache())) {
                 return true;
             }
@@ -100,7 +96,6 @@ trait LaravelFollow
 
     /**
      * Returns the users a user is following.
-     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getFollowing(): \Illuminate\Database\Eloquent\Collection
@@ -112,7 +107,6 @@ trait LaravelFollow
 
     /**
      * Returns the users who are following a user.
-     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getFollowers(): \Illuminate\Database\Eloquent\Collection
@@ -124,7 +118,6 @@ trait LaravelFollow
 
     /**
      * Returns IDs of the users a user is following.
-     *
      * @return array
      */
     public function getFollowingIds(): array
@@ -137,7 +130,6 @@ trait LaravelFollow
 
     /**
      * Returns IDs of the users who are following a user.
-     *
      * @return array
      */
     public function getFollowersIds(): array
@@ -151,7 +143,6 @@ trait LaravelFollow
     /**
      * Returns IDs of the users a user is following.
      * Returns IDs of the users who are following a user.
-     *
      * @return array
      */
     public function getFollowingAndFollowersIds(): array
@@ -164,79 +155,71 @@ trait LaravelFollow
 
     /**
      * Caches IDs of the users a user is following.
-     *
-     * @param  mixed  $duration
+     * @param mixed $duration
      * @return void
      */
     public function cacheFollowing(mixed $duration = null): void
     {
-            $duration ?? Carbon::now()->addDay();
+        $duration ?? Carbon::now()->addDay();
 
-        cache()->forget('following.'.auth()->id());
+        cache()->forget('following.' . auth()->id());
 
-        cache()->remember('following.'.auth()->id(), $duration, function () {
+        cache()->remember('following.' . auth()->id(), $duration, function () {
             return auth()->user()->getFollowingIds();
         });
     }
 
     /**
      * Caches IDs of the users who are following a user.
-     *
-     * @param  mixed|null  $duration
+     * @param mixed|null $duration
      * @return void
      */
     public function cacheFollowers(mixed $duration = null): void
     {
-            $duration ?? Carbon::now()->addDay();
+        $duration ?? Carbon::now()->addDay();
 
-        cache()->forget('followers.'.auth()->id());
+        cache()->forget('followers.' . auth()->id());
 
-        cache()->remember('followers.'.auth()->id(), $duration, function () {
+        cache()->remember('followers.' . auth()->id(), $duration, function () {
             return auth()->user()->getFollowersIds();
         });
     }
 
     /**
      * Returns the cached IDs of the users a user is following.
-     *
      * @return array
-     *
      * @throws
      */
     public function getFollowingCache(): array
     {
-        return cache()->get('following.'.auth()->id()) ?? [];
+        return cache()->get('following.' . auth()->id()) ?? [];
     }
 
     /**
      * Returns the cached IDs of the users who are followers a user.
-     *
      * @return array
-     *
      * @throws
      */
     public function getFollowersCache(): array
     {
-        return cache()->get('followers.'.auth()->id()) ?? [];
+        return cache()->get('followers.' . auth()->id()) ?? [];
     }
 
     /**
      * Clears the Following cache.
-     *
      * @return void
      */
     public function clearFollowingCache(): void
     {
-        cache()->forget('following.'.auth()->id());
+        cache()->forget('following.' . auth()->id());
     }
 
     /**
      * Clears the Followers cache.
-     *
      * @return void
      */
     public function clearFollowersCache(): void
     {
-        cache()->forget('followers.'.auth()->id());
+        cache()->forget('followers.' . auth()->id());
     }
 }

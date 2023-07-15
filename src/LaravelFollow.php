@@ -9,7 +9,8 @@ trait LaravelFollow
 {
     /**
      * Follow the given user.
-     * @param mixed $user
+     *
+     * @param  mixed  $user
      * @return void
      */
     public function follow(mixed $user): void
@@ -24,7 +25,8 @@ trait LaravelFollow
 
     /**
      * Unfollow the given user.
-     * @param mixed $user
+     *
+     * @param  mixed  $user
      * @return void
      */
     public function unfollow(mixed $user): void
@@ -38,7 +40,8 @@ trait LaravelFollow
 
     /**
      * Check if a user is following the given user.
-     * @param mixed $user
+     *
+     * @param  mixed  $user
      * @return bool
      */
     public function isFollowing(mixed $user): bool
@@ -67,7 +70,8 @@ trait LaravelFollow
 
     /**
      * Check if a user is followed by the given user.
-     * @param mixed $user
+     *
+     * @param  mixed  $user
      * @return bool
      */
     public function isFollowedBy(mixed $user): bool
@@ -96,6 +100,7 @@ trait LaravelFollow
 
     /**
      * Returns the users a user is following.
+     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getFollowing(): \Illuminate\Database\Eloquent\Collection
@@ -107,6 +112,7 @@ trait LaravelFollow
 
     /**
      * Returns the users who are following a user.
+     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getFollowers(): \Illuminate\Database\Eloquent\Collection
@@ -118,6 +124,7 @@ trait LaravelFollow
 
     /**
      * Returns IDs of the users a user is following.
+     *
      * @return array
      */
     public function getFollowingIds(): array
@@ -130,6 +137,7 @@ trait LaravelFollow
 
     /**
      * Returns IDs of the users who are following a user.
+     *
      * @return array
      */
     public function getFollowersIds(): array
@@ -143,6 +151,7 @@ trait LaravelFollow
     /**
      * Returns IDs of the users a user is following.
      * Returns IDs of the users who are following a user.
+     *
      * @return array
      */
     public function getFollowingAndFollowersIds(): array
@@ -155,7 +164,8 @@ trait LaravelFollow
 
     /**
      * Caches IDs of the users a user is following.
-     * @param mixed $duration
+     *
+     * @param  mixed  $duration
      * @return void
      */
     public function cacheFollowing(mixed $duration = null): void
@@ -171,7 +181,8 @@ trait LaravelFollow
 
     /**
      * Caches IDs of the users who are following a user.
-     * @param mixed|null $duration
+     *
+     * @param  mixed|null  $duration
      * @return void
      */
     public function cacheFollowers(mixed $duration = null): void
@@ -187,7 +198,9 @@ trait LaravelFollow
 
     /**
      * Returns the cached IDs of the users a user is following.
+     *
      * @return array
+     *
      * @throws
      */
     public function getFollowingCache(): array
@@ -197,7 +210,9 @@ trait LaravelFollow
 
     /**
      * Returns the cached IDs of the users who are followers a user.
+     *
      * @return array
+     *
      * @throws
      */
     public function getFollowersCache(): array
@@ -207,6 +222,7 @@ trait LaravelFollow
 
     /**
      * Clears the Following cache.
+     *
      * @return void
      */
     public function clearFollowingCache(): void
@@ -216,6 +232,7 @@ trait LaravelFollow
 
     /**
      * Clears the Followers cache.
+     *
      * @return void
      */
     public function clearFollowersCache(): void

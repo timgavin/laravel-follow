@@ -2,6 +2,11 @@
 
 All notable changes to `Laravel Follow` will be documented in this file.
 
+## 1.1.9
+
+- Replaced `auth()` with `$this`
+- Added method to get latest followers
+
 ## 1.1.8
 
 - Bug fixes

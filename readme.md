@@ -74,6 +74,12 @@ Returns the users who are following a user
 auth()->user()->getFollowers();
 ```
 
+Returns the most recent users who are following a user
+```php
+// default limit is 5
+auth()->user()->getLatestFollowers($limit);
+```
+
 Returns an array of IDs of the users a user is following
 ```php
 auth()->user()->getFollowingIds();

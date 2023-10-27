@@ -216,6 +216,25 @@ class FollowTest extends TestCase
     }
 
     /** @test */
+    public function it_gets_the_latest_users_who_are_following_a_user()
+    {
+        $user1 = User::create();
+        $user2 = User::create();
+
+        $user2->follow($user1);
+
+        $followedBy = $user1->getLatestFollowers(1);
+
+        foreach ($followedBy as $item) {
+            if ($item->following->id === 1) {
+                $this->assertTrue(true);
+            } else {
+                $this->fail();
+            }
+        }
+    }
+
+    /** @test */
     public function it_gets_the_ids_of_users_who_are_following_a_user()
     {
         $user1 = User::create();

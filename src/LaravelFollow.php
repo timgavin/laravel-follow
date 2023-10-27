@@ -123,6 +123,20 @@ trait LaravelFollow
     }
 
     /**
+     * Returns the users who are following a user.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getLatestFollowers($limit = 5): \Illuminate\Database\Eloquent\Collection
+    {
+        return Follow::where('following_id', $this->id)
+            ->with('followers')
+            ->latest()
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
      * Returns IDs of the users a user is following.
      *
      * @return array
@@ -172,10 +186,10 @@ trait LaravelFollow
     {
         $duration ?? Carbon::now()->addDay();
 
-        cache()->forget('following.' . auth()->id());
+        cache()->forget('following.' . $this->id);
 
-        cache()->remember('following.' . auth()->id(), $duration, function () {
-            return auth()->user()->getFollowingIds();
+        cache()->remember('following.' . $this->id, $duration, function () {
+            return $this->getFollowingIds();
         });
     }
 
@@ -189,10 +203,10 @@ trait LaravelFollow
     {
         $duration ?? Carbon::now()->addDay();
 
-        cache()->forget('followers.' . auth()->id());
+        cache()->forget('followers.' . $this->id);
 
-        cache()->remember('followers.' . auth()->id(), $duration, function () {
-            return auth()->user()->getFollowersIds();
+        cache()->remember('followers.' . $this->id, $duration, function () {
+            return $this->getFollowersIds();
         });
     }
 
@@ -205,7 +219,7 @@ trait LaravelFollow
      */
     public function getFollowingCache(): array
     {
-        return cache()->get('following.' . auth()->id()) ?? [];
+        return cache()->get('following.' . $this->id) ?? [];
     }
 
     /**
@@ -217,7 +231,7 @@ trait LaravelFollow
      */
     public function getFollowersCache(): array
     {
-        return cache()->get('followers.' . auth()->id()) ?? [];
+        return cache()->get('followers.' . $this->id) ?? [];
     }
 
     /**
@@ -227,7 +241,7 @@ trait LaravelFollow
      */
     public function clearFollowingCache(): void
     {
-        cache()->forget('following.' . auth()->id());
+        cache()->forget('following.' . $this->id);
     }
 
     /**
@@ -237,6 +251,6 @@ trait LaravelFollow
      */
     public function clearFollowersCache(): void
     {
-        cache()->forget('followers.' . auth()->id());
+        cache()->forget('followers.' . $this->id);
     }
 }

@@ -15,6 +15,14 @@ class LaravelFollowServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
+        $this->publishes([
+            __DIR__.'/../database/migrations' => database_path('migrations')
+        ], 'migrations');
+
+        $this->publishes([
+            __DIR__.'/../config/laravel-follow.php' => config_path('laravel-follow.php')
+        ], 'config');
+
         if ($this->app->runningInConsole()) {
             $this->bootForConsole();
         }

@@ -41,7 +41,7 @@ trait LaravelFollow
         }
 
         $follow = Follow::firstOrCreate([
-            'user_id' => $this->id,
+            'user_id'      => $this->id,
             'following_id' => $user_id,
         ]);
 

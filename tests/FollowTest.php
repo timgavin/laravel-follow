@@ -9,7 +9,7 @@ it('allows a user to follow another user', function () {
     $user1->follow($user2);
 
     $this->assertDatabaseHas('follows', [
-        'user_id' => 1,
+        'user_id'      => 1,
         'following_id' => 2,
     ]);
 });
@@ -21,7 +21,7 @@ it('allows a user to follow another user by id', function () {
     $user1->follow($user2->id);
 
     $this->assertDatabaseHas('follows', [
-        'user_id' => 1,
+        'user_id'      => 1,
         'following_id' => 2,
     ]);
 });
@@ -34,7 +34,7 @@ it('allows a user to unfollow another user', function () {
     $user1->unfollow($user2);
 
     $this->assertDatabaseMissing('follows', [
-        'user_id' => 1,
+        'user_id'      => 1,
         'following_id' => 2,
     ]);
 });
@@ -47,7 +47,7 @@ it('allows a user to unfollow another user by id', function () {
     $user1->unfollow($user2->id);
 
     $this->assertDatabaseMissing('follows', [
-        'user_id' => 1,
+        'user_id'      => 1,
         'following_id' => 2,
     ]);
 });
@@ -180,7 +180,7 @@ it('caches the ids of users a user is following', function () {
     auth()->user()->follow($user2);
     auth()->user()->cacheFollowing();
 
-    expect(cache('laravel-follow:following.' . auth()->id()))->toContain(2);
+    expect(cache('laravel-follow:following.'.auth()->id()))->toContain(2);
 });
 
 it('gets the cached ids of users a user is following', function () {
@@ -205,7 +205,7 @@ it('caches the ids of users who are following a user', function () {
 
     auth()->user()->cacheFollowers();
 
-    expect(cache('laravel-follow:followers.' . auth()->id()))->toContain(2);
+    expect(cache('laravel-follow:followers.'.auth()->id()))->toContain(2);
 });
 
 it('gets the cached ids of users who are following a user', function () {
@@ -339,7 +339,7 @@ it('prevents a user from following themselves', function () {
     $user1->follow($user1);
 
     $this->assertDatabaseMissing('follows', [
-        'user_id' => 1,
+        'user_id'      => 1,
         'following_id' => 1,
     ]);
 });
@@ -350,7 +350,7 @@ it('prevents a user from following themselves by id', function () {
     $user1->follow($user1->id);
 
     $this->assertDatabaseMissing('follows', [
-        'user_id' => 1,
+        'user_id'      => 1,
         'following_id' => 1,
     ]);
 });
@@ -603,4 +603,3 @@ it('clears the following cache for another user by id', function () {
 
     expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
 });
-

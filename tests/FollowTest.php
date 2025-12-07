@@ -180,7 +180,7 @@ it('caches the ids of users a user is following', function () {
     auth()->user()->follow($user2);
     auth()->user()->cacheFollowing();
 
-    expect(cache('laravel-follow:following.' . auth()->id()))->toContain(2);
+    expect(cache('laravel-follow:following.'.auth()->id()))->toContain(2);
 });
 
 it('gets the cached ids of users a user is following', function () {
@@ -205,7 +205,7 @@ it('caches the ids of users who are following a user', function () {
 
     auth()->user()->cacheFollowers();
 
-    expect(cache('laravel-follow:followers.' . auth()->id()))->toContain(2);
+    expect(cache('laravel-follow:followers.'.auth()->id()))->toContain(2);
 });
 
 it('gets the cached ids of users who are following a user', function () {
@@ -603,4 +603,3 @@ it('clears the following cache for another user by id', function () {
 
     expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
 });
-

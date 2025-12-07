@@ -41,7 +41,7 @@ trait LaravelFollow
         }
 
         $follow = Follow::firstOrCreate([
-            'user_id' => $this->id,
+            'user_id'      => $this->id,
             'following_id' => $user_id,
         ]);
 
@@ -363,7 +363,7 @@ trait LaravelFollow
         $user_id = is_int($user) ? $user : ($user->id ?? null);
 
         if ($user_id === null) {
-            return new Collection;
+            return new Collection();
         }
 
         return Follow::where(function ($query) use ($user_id) {

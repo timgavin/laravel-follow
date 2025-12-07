@@ -34,7 +34,7 @@ class LaravelFollowServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/laravel-follow.php', 'laravel-follow');
 
         $this->app->singleton('laravel-follow', function ($app) {
-            return new LaravelFollowManager;
+            return new LaravelFollowManager();
         });
     }
 

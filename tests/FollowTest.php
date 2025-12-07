@@ -1,353 +1,606 @@
 <?php
 
-namespace TimGavin\LaravelFollow\Tests;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use TimGavin\LaravelFollow\Models\User;
 
-class FollowTest extends TestCase
-{
-    use RefreshDatabase;
+it('allows a user to follow another user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function a_user_can_follow_another_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2);
 
-        $user1->follow($user2);
+    $this->assertDatabaseHas('follows', [
+        'user_id' => 1,
+        'following_id' => 2,
+    ]);
+});
 
-        $this->assertDatabaseHas('follows', [
-            'user_id' => 1,
-            'following_id' => 2,
-        ]);
-    }
+it('allows a user to follow another user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function a_user_can_follow_another_user_by_id()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2->id);
 
-        $user1->follow($user2->id);
+    $this->assertDatabaseHas('follows', [
+        'user_id' => 1,
+        'following_id' => 2,
+    ]);
+});
 
-        $this->assertDatabaseHas('follows', [
-            'user_id' => 1,
-            'following_id' => 2,
-        ]);
-    }
+it('allows a user to unfollow another user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function a_user_can_unfollow_another_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2);
+    $user1->unfollow($user2);
 
-        $user1->follow($user2);
-        $user1->unfollow($user2);
+    $this->assertDatabaseMissing('follows', [
+        'user_id' => 1,
+        'following_id' => 2,
+    ]);
+});
 
-        $this->assertDatabaseMissing('follows', [
-            'user_id' => 1,
-            'following_id' => 2,
-        ]);
-    }
+it('allows a user to unfollow another user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function a_user_can_unfollow_another_user_by_id()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2->id);
+    $user1->unfollow($user2->id);
 
-        $user1->follow($user2->id);
-        $user1->unfollow($user2->id);
+    $this->assertDatabaseMissing('follows', [
+        'user_id' => 1,
+        'following_id' => 2,
+    ]);
+});
 
-        $this->assertDatabaseMissing('follows', [
-            'user_id' => 1,
-            'following_id' => 2,
-        ]);
-    }
+it('checks if a user is following another user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function is_a_user_following_another_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2);
 
-        $user1->follow($user2);
+    expect($user1->isFollowing($user2))->toBeTrue();
+});
 
-        if ($user1->isFollowing($user2)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
+it('checks if a user is following another user in cache', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $this->actingAs($user1);
+
+    auth()->user()->follow($user2);
+    auth()->user()->cacheFollowing();
+
+    expect($user1->isFollowing($user2))->toBeTrue();
+});
+
+it('checks if a user is following another user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2->id);
+
+    expect($user1->isFollowing($user2->id))->toBeTrue();
+});
+
+it('checks if a user is followed by another user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    expect($user2->isFollowedBy($user1))->toBeTrue();
+});
+
+it('checks if a user is followed by another user in cache', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $this->actingAs($user1);
+
+    auth()->user()->cacheFollowers();
+
+    expect(auth()->user()->isFollowedBy($user2))->toBeTrue();
+});
+
+it('checks if a user is followed by another user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2->id);
+
+    expect($user2->isFollowedBy($user1->id))->toBeTrue();
+});
+
+it('gets the users a user is following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    $following = $user1->getFollowing();
+
+    expect($following)->toHaveCount(1);
+    expect($following->first()->following->id)->toBe(2);
+});
+
+it('gets the ids of users a user is following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    $followingIds = $user1->getFollowingIds();
+
+    expect($followingIds)->toContain(2);
+});
+
+it('gets the users who are following a user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $followers = $user1->getFollowers();
+
+    expect($followers)->toHaveCount(1);
+    expect($followers->first()->following->id)->toBe(1);
+});
+
+it('gets the latest users who are following a user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $followers = $user1->getLatestFollowers(1);
+
+    expect($followers)->toHaveCount(1);
+    expect($followers->first()->following->id)->toBe(1);
+});
+
+it('gets the ids of users who are following a user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $followerIds = $user1->getFollowersIds();
+
+    expect($followerIds)->toContain(2);
+});
+
+it('caches the ids of users a user is following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $this->actingAs($user1);
+
+    auth()->user()->follow($user2);
+    auth()->user()->cacheFollowing();
+
+    expect(cache('laravel-follow:following.' . auth()->id()))->toContain(2);
+});
+
+it('gets the cached ids of users a user is following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $this->actingAs($user1);
+
+    auth()->user()->follow($user2);
+    auth()->user()->cacheFollowing();
+
+    expect(auth()->user()->getFollowingCache())->toContain(2);
+});
+
+it('caches the ids of users who are following a user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $this->actingAs($user1);
+
+    auth()->user()->cacheFollowers();
+
+    expect(cache('laravel-follow:followers.' . auth()->id()))->toContain(2);
+});
+
+it('gets the cached ids of users who are following a user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $this->actingAs($user1);
+
+    auth()->user()->cacheFollowers();
+
+    expect(auth()->user()->getFollowersCache())->toContain(2);
+});
+
+it('clears the cached ids of users a user is following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $this->actingAs($user1);
+
+    auth()->user()->cacheFollowing();
+    auth()->user()->clearFollowingCache();
+
+    expect(auth()->user()->getFollowingCache())->toBeEmpty();
+});
+
+it('clears the cached ids of users who are following a user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $this->actingAs($user1);
+
+    auth()->user()->cacheFollowers();
+    auth()->user()->clearFollowersCache();
+
+    expect(auth()->user()->getFollowersCache())->toBeEmpty();
+});
+
+it('returns the follows relationship', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    expect($user1->follows)->toHaveCount(1);
+    expect($user1->follows->first()->following_id)->toBe(2);
+});
+
+it('returns the followers relationship', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    expect($user1->followers)->toHaveCount(1);
+    expect($user1->followers->first()->user_id)->toBe(2);
+});
+
+it('checks if users have any follow relationship', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+
+    $user1->follow($user2);
+
+    expect($user1->hasFollowWith($user2))->toBeTrue();
+    expect($user2->hasFollowWith($user1))->toBeTrue();
+    expect($user1->hasFollowWith($user3))->toBeFalse();
+});
+
+it('gets follow relationships between two users', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+    $user2->follow($user1);
+
+    $relationships = $user1->getFollowRelationshipsWith($user2);
+
+    expect($relationships)->toHaveCount(2);
+});
+
+it('gets the following relationship record', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    $relationship = $user1->getFollowingRelationship($user2);
+
+    expect($relationship)->not->toBeNull();
+    expect($relationship->user_id)->toBe(1);
+    expect($relationship->following_id)->toBe(2);
+});
+
+it('gets the follower relationship record', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $relationship = $user1->getFollowerRelationship($user2);
+
+    expect($relationship)->not->toBeNull();
+    expect($relationship->user_id)->toBe(2);
+    expect($relationship->following_id)->toBe(1);
+});
+
+it('gets the combined following and followers ids', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+
+    $user1->follow($user2);
+    $user3->follow($user1);
+
+    $ids = $user1->getFollowingAndFollowersIds();
+
+    expect($ids['following'])->toContain(2);
+    expect($ids['followers'])->toContain(3);
+});
+
+it('prevents a user from following themselves', function () {
+    $user1 = User::create();
+
+    $user1->follow($user1);
+
+    $this->assertDatabaseMissing('follows', [
+        'user_id' => 1,
+        'following_id' => 1,
+    ]);
+});
+
+it('prevents a user from following themselves by id', function () {
+    $user1 = User::create();
+
+    $user1->follow($user1->id);
+
+    $this->assertDatabaseMissing('follows', [
+        'user_id' => 1,
+        'following_id' => 1,
+    ]);
+});
+
+// New v2.0 tests
+
+it('returns true when follow is successful', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $result = $user1->follow($user2);
+
+    expect($result)->toBeTrue();
+});
+
+it('returns false when already following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+    $result = $user1->follow($user2);
+
+    expect($result)->toBeFalse();
+});
+
+it('returns true when unfollow is successful', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+    $result = $user1->unfollow($user2);
+
+    expect($result)->toBeTrue();
+});
+
+it('returns false when not following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $result = $user1->unfollow($user2);
+
+    expect($result)->toBeFalse();
+});
+
+it('toggles follow on', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $result = $user1->toggleFollow($user2);
+
+    expect($result)->toBeTrue();
+    expect($user1->isFollowing($user2))->toBeTrue();
+});
+
+it('toggles follow off', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+    $result = $user1->toggleFollow($user2);
+
+    expect($result)->toBeFalse();
+    expect($user1->isFollowing($user2))->toBeFalse();
+});
+
+it('gets the following count', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+
+    $user1->follow($user2);
+    $user1->follow($user3);
+
+    expect($user1->getFollowingCount())->toBe(2);
+});
+
+it('gets the followers count', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+
+    $user2->follow($user1);
+    $user3->follow($user1);
+
+    expect($user1->getFollowersCount())->toBe(2);
+});
+
+it('checks if users are mutually following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+    expect($user1->isMutuallyFollowing($user2))->toBeFalse();
+
+    $user2->follow($user1);
+    expect($user1->isMutuallyFollowing($user2))->toBeTrue();
+});
+
+it('gets following with pagination', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    $paginated = $user1->getFollowingPaginated(10);
+
+    expect($paginated)->toBeInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class);
+    expect($paginated->total())->toBe(1);
+});
+
+it('gets followers with pagination', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user2->follow($user1);
+
+    $paginated = $user1->getFollowersPaginated(10);
+
+    expect($paginated)->toBeInstanceOf(\Illuminate\Contracts\Pagination\LengthAwarePaginator::class);
+    expect($paginated->total())->toBe(1);
+});
+
+it('dispatches UserFollowed event when following', function () {
+    \Illuminate\Support\Facades\Event::fake();
+
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    \Illuminate\Support\Facades\Event::assertDispatched(
+        \TimGavin\LaravelFollow\Events\UserFollowed::class,
+        function ($event) {
+            return $event->userId === 1 && $event->followingId === 2;
         }
-    }
+    );
+});
 
-    /** @test */
-    public function is_a_user_following_another_user_in_cache()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+it('dispatches UserUnfollowed event when unfollowing', function () {
+    \Illuminate\Support\Facades\Event::fake();
 
-        $this->actingAs($user1);
+    $user1 = User::create();
+    $user2 = User::create();
 
-        auth()->user()->follow($user2);
-        auth()->user()->cacheFollowing();
+    $user1->follow($user2);
+    $user1->unfollow($user2);
 
-        if ($user1->isFollowing($user2)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
+    \Illuminate\Support\Facades\Event::assertDispatched(
+        \TimGavin\LaravelFollow\Events\UserUnfollowed::class,
+        function ($event) {
+            return $event->userId === 1 && $event->unfollowedId === 2;
         }
-    }
-
-    /** @test */
-    public function is_a_user_following_another_user_by_id()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user1->follow($user2->id);
-
-        if ($user1->isFollowing($user2->id)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
-        }
-    }
-
-    /** @test */
-    public function is_a_user_followed_by_another_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user1->follow($user2);
-
-        if ($user2->isFollowedBy($user1)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
-        }
-    }
-
-    /** @test */
-    public function is_a_user_followed_by_another_user_in_cache()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user2->follow($user1);
-
-        $this->actingAs($user1);
-
-        auth()->user()->cacheFollowers();
-
-        if (auth()->user()->isFollowedBy($user2)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
-        }
-    }
-
-    /** @test */
-    public function is_a_user_followed_by_another_user_by_id()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user1->follow($user2->id);
-
-        if ($user2->isFollowedBy($user1->id)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
-        }
-    }
-
-    /** @test */
-    public function it_gets_the_users_a_user_is_following()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user1->follow($user2);
-
-        $following = $user1->getFollowing();
-
-        foreach ($following as $item) {
-            if ($item->following->id === 2) {
-                $this->assertTrue(true);
-            } else {
-                $this->fail();
-            }
-        }
-    }
-
-    /** @test */
-    public function it_gets_the_ids_of_users_a_user_is_following()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user1->follow($user2);
+    );
+});
 
-        $followingIds = $user1->getFollowingIds();
-
-        $this->assertContains(2, $followingIds);
-    }
-
-    /** @test */
-    public function it_gets_the_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+it('clears cache when following', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
 
-        $user2->follow($user1);
+    $user1->follow($user2);
+    $user1->cacheFollowing();
 
-        $followedBy = $user1->getFollowers();
+    expect($user1->getFollowingCache())->toContain(2);
 
-        foreach ($followedBy as $item) {
-            if ($item->following->id === 1) {
-                $this->assertTrue(true);
-            } else {
-                $this->fail();
-            }
-        }
-    }
+    $user1->follow($user3);
 
-    /** @test */
-    public function it_gets_the_latest_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
+});
 
-        $user2->follow($user1);
+it('clears cache when unfollowing', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-        $followedBy = $user1->getLatestFollowers(1);
+    $user1->follow($user2);
+    $user1->cacheFollowing();
 
-        foreach ($followedBy as $item) {
-            if ($item->following->id === 1) {
-                $this->assertTrue(true);
-            } else {
-                $this->fail();
-            }
-        }
-    }
+    expect($user1->getFollowingCache())->toContain(2);
 
-    /** @test */
-    public function it_gets_the_ids_of_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->unfollow($user2);
 
-        $user2->follow($user1);
+    expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
+});
 
-        $followedByIds = $user1->getFollowersIds();
+it('uses query scopes on Follow model', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-        $this->assertContains(2, $followedByIds);
-    }
+    $user1->follow($user2);
 
-    /** @test */
-    public function it_caches_the_ids_of_users_a_user_is_following()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $follows = \TimGavin\LaravelFollow\Models\Follow::whereUserFollows(1)->get();
+    expect($follows)->toHaveCount(1);
 
-        $this->actingAs($user1);
+    $followers = \TimGavin\LaravelFollow\Models\Follow::whereUserIsFollowedBy(2)->get();
+    expect($followers)->toHaveCount(1);
+});
 
-        auth()->user()->follow($user2);
-        auth()->user()->cacheFollowing();
+it('clears the followers cache for another user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-        $this->assertContains(2, cache('following.' . auth()->id()));
-    }
+    $user1->follow($user2);
+    $user2->cacheFollowers();
 
-    /** @test */
-    public function it_gets_the_cached_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    expect(cache()->has('laravel-follow:followers.2'))->toBeTrue();
 
-        $this->actingAs($user1);
+    $user1->clearFollowersCacheFor($user2);
 
-        auth()->user()->follow($user2);
-        auth()->user()->cacheFollowing();
+    expect(cache()->has('laravel-follow:followers.2'))->toBeFalse();
+});
 
-        $this->assertContains(2, auth()->user()->getFollowingCache());
-    }
+it('clears the followers cache for another user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function it_caches_the_ids_of_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2);
+    $user2->cacheFollowers();
 
-        $user2->follow($user1);
+    expect(cache()->has('laravel-follow:followers.2'))->toBeTrue();
 
-        $this->actingAs($user1);
+    $user1->clearFollowersCacheFor($user2->id);
 
-        auth()->user()->cacheFollowers();
+    expect(cache()->has('laravel-follow:followers.2'))->toBeFalse();
+});
 
-        $this->assertContains(2, cache('followers.' . auth()->id()));
-    }
+it('clears the following cache for another user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function it_gets_the_cached_ids_of_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2);
+    $user1->cacheFollowing();
 
-        $user2->follow($user1);
+    expect(cache()->has('laravel-follow:following.1'))->toBeTrue();
 
-        $this->actingAs($user1);
+    $user2->clearFollowingCacheFor($user1);
 
-        auth()->user()->cacheFollowers();
+    expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
+});
 
-        $this->assertContains(2, auth()->user()->getFollowersCache());
-    }
+it('clears the following cache for another user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
 
-    /** @test */
-    public function it_clears_the_cached_ids_of_users_who_are_followed_by_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
+    $user1->follow($user2);
+    $user1->cacheFollowing();
 
-        $user2->follow($user1);
+    expect(cache()->has('laravel-follow:following.1'))->toBeTrue();
 
-        $this->actingAs($user1);
+    $user2->clearFollowingCacheFor($user1->id);
 
-        auth()->user()->cacheFollowing();
+    expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
+});
 
-        auth()->user()->clearFollowingCache();
-
-        $cache = auth()->user()->getFollowingCache();
-
-        if (empty($cache)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
-        }
-    }
-
-    /** @test */
-    public function it_clears_the_cached_ids_of_users_who_are_following_a_user()
-    {
-        $user1 = User::create();
-        $user2 = User::create();
-
-        $user2->follow($user1);
-
-        $this->actingAs($user1);
-
-        auth()->user()->cacheFollowers();
-
-        auth()->user()->clearFollowersCache();
-
-        $cache = auth()->user()->getFollowersCache();
-
-        if (empty($cache)) {
-            $this->assertTrue(true);
-        } else {
-            $this->fail();
-        }
-    }
-}

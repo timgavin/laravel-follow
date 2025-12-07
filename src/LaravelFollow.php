@@ -2,108 +2,178 @@
 
 namespace TimGavin\LaravelFollow;
 
-use Carbon\Carbon;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use TimGavin\LaravelFollow\Events\UserFollowed;
+use TimGavin\LaravelFollow\Events\UserUnfollowed;
 use TimGavin\LaravelFollow\Models\Follow;
 
 trait LaravelFollow
 {
     /**
+     * Define the follows relationship (users this user is following).
+     */
+    public function follows(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Follow::class, 'user_id');
+    }
+
+    /**
+     * Define the followers relationship (users following this user).
+     */
+    public function followers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Follow::class, 'following_id');
+    }
+
+    /**
      * Follow the given user.
      *
-     * @param  mixed  $user
-     * @return void
+     * @return bool True if the user was followed, false if already following or invalid.
      */
-    public function follow(mixed $user): void
+    public function follow(int|Authenticatable $user): bool
     {
-        $user_id = is_int($user) ? $user : $user->id;
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
 
-        Follow::firstOrCreate([
+        if ($user_id === null || $user_id === $this->id) {
+            return false;
+        }
+
+        $follow = Follow::firstOrCreate([
             'user_id' => $this->id,
             'following_id' => $user_id,
         ]);
+
+        if ($follow->wasRecentlyCreated) {
+            $this->clearFollowingCache();
+
+            if (config('laravel-follow.dispatch_events', true)) {
+                event(new UserFollowed($this->id, $user_id));
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
      * Unfollow the given user.
      *
-     * @param  mixed  $user
-     * @return void
+     * @return bool True if the user was unfollowed, false if not following or invalid.
      */
-    public function unfollow(mixed $user): void
+    public function unfollow(int|Authenticatable $user): bool
     {
-        $user_id = is_int($user) ? $user : $user->id;
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
 
-        Follow::where('user_id', $this->id)
+        if ($user_id === null) {
+            return false;
+        }
+
+        $deleted = Follow::where('user_id', $this->id)
             ->where('following_id', $user_id)
             ->delete();
+
+        if ($deleted > 0) {
+            $this->clearFollowingCache();
+
+            if (config('laravel-follow.dispatch_events', true)) {
+                event(new UserUnfollowed($this->id, $user_id));
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Toggle the follow status for a user.
+     *
+     * @return bool True if now following, false if unfollowed.
+     */
+    public function toggleFollow(int|Authenticatable $user): bool
+    {
+        if ($this->isFollowing($user)) {
+            $this->unfollow($user);
+
+            return false;
+        }
+
+        $this->follow($user);
+
+        return true;
     }
 
     /**
      * Check if a user is following the given user.
-     *
-     * @param  mixed  $user
-     * @return bool
      */
-    public function isFollowing(mixed $user): bool
+    public function isFollowing(int|Authenticatable $user): bool
     {
-        $user_id = is_int($user) ? $user : $user->id;
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
 
-        if (cache()->has('following.' . $this->id)) {
-            if (in_array($user_id, $this->getFollowingCache())) {
-                return true;
-            }
-
+        if ($user_id === null) {
             return false;
         }
 
-        $isFollowing = Follow::toBase()
-            ->where('user_id', $this->id)
-            ->where('following_id', $user_id)
-            ->first();
-
-        if ($isFollowing) {
-            return true;
+        if (cache()->has('laravel-follow:following.'.$this->id)) {
+            return in_array($user_id, $this->getFollowingCache());
         }
 
-        return false;
+        return Follow::toBase()
+            ->where('user_id', $this->id)
+            ->where('following_id', $user_id)
+            ->exists();
     }
 
     /**
      * Check if a user is followed by the given user.
-     *
-     * @param  mixed  $user
-     * @return bool
      */
-    public function isFollowedBy(mixed $user): bool
+    public function isFollowedBy(int|Authenticatable $user): bool
     {
-        $user_id = is_int($user) ? $user : $user->id;
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
 
-        if (cache()->has('followers.' . $user_id)) {
-            if (in_array($user_id, $this->getFollowersCache())) {
-                return true;
-            }
-
+        if ($user_id === null) {
             return false;
         }
 
-        $isFollowedBy = Follow::toBase()
-            ->where('user_id', $user_id)
-            ->where('following_id', $this->id)
-            ->first();
-
-        if ($isFollowedBy) {
-            return true;
+        if (cache()->has('laravel-follow:followers.'.$this->id)) {
+            return in_array($user_id, $this->getFollowersCache());
         }
 
-        return false;
+        return Follow::toBase()
+            ->where('user_id', $user_id)
+            ->where('following_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Check if two users mutually follow each other.
+     */
+    public function isMutuallyFollowing(int|Authenticatable $user): bool
+    {
+        return $this->isFollowing($user) && $this->isFollowedBy($user);
+    }
+
+    /**
+     * Check if there is any follow relationship between this user and another user.
+     */
+    public function hasFollowWith(int|Authenticatable $user): bool
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id === null) {
+            return false;
+        }
+
+        return $this->isFollowing($user) || $this->isFollowedBy($user);
     }
 
     /**
      * Returns the users a user is following.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getFollowing(): \Illuminate\Database\Eloquent\Collection
+    public function getFollowing(): Collection
     {
         return Follow::where('user_id', $this->id)
             ->with('following')
@@ -111,35 +181,65 @@ trait LaravelFollow
     }
 
     /**
-     * Returns the users who are following a user.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Returns the users a user is following with pagination.
      */
-    public function getFollowers(): \Illuminate\Database\Eloquent\Collection
+    public function getFollowingPaginated(int $perPage = 15): LengthAwarePaginator
     {
-        return Follow::where('following_id', $this->id)
-            ->with('followers')
-            ->get();
+        return Follow::where('user_id', $this->id)
+            ->with('following')
+            ->paginate($perPage);
     }
 
     /**
      * Returns the users who are following a user.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getLatestFollowers($limit = 5): \Illuminate\Database\Eloquent\Collection
+    public function getFollowers(): Collection
     {
         return Follow::where('following_id', $this->id)
-            ->with('followers')
+            ->with('user')
+            ->get();
+    }
+
+    /**
+     * Returns the users who are following a user with pagination.
+     */
+    public function getFollowersPaginated(int $perPage = 15): LengthAwarePaginator
+    {
+        return Follow::where('following_id', $this->id)
+            ->with('user')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Returns the latest users who are following a user.
+     */
+    public function getLatestFollowers(int $limit = 5): Collection
+    {
+        return Follow::where('following_id', $this->id)
+            ->with('user')
             ->latest()
             ->limit($limit)
             ->get();
     }
 
     /**
+     * Returns the count of users this user is following.
+     */
+    public function getFollowingCount(): int
+    {
+        return Follow::where('user_id', $this->id)->count();
+    }
+
+    /**
+     * Returns the count of users following this user.
+     */
+    public function getFollowersCount(): int
+    {
+        return Follow::where('following_id', $this->id)->count();
+    }
+
+    /**
      * Returns IDs of the users a user is following.
-     *
-     * @return array
      */
     public function getFollowingIds(): array
     {
@@ -151,8 +251,6 @@ trait LaravelFollow
 
     /**
      * Returns IDs of the users who are following a user.
-     *
-     * @return array
      */
     public function getFollowersIds(): array
     {
@@ -163,10 +261,7 @@ trait LaravelFollow
     }
 
     /**
-     * Returns IDs of the users a user is following.
-     * Returns IDs of the users who are following a user.
-     *
-     * @return array
+     * Returns IDs of both users a user is following and followers.
      */
     public function getFollowingAndFollowersIds(): array
     {
@@ -178,79 +273,137 @@ trait LaravelFollow
 
     /**
      * Caches IDs of the users a user is following.
-     *
-     * @param  mixed  $duration
-     * @return void
      */
     public function cacheFollowing(mixed $duration = null): void
     {
-        $duration ?? Carbon::now()->addDay();
+        $duration = $duration ?? config('laravel-follow.cache_duration', 86400);
 
-        cache()->forget('following.' . $this->id);
+        cache()->forget('laravel-follow:following.'.$this->id);
 
-        cache()->remember('following.' . $this->id, $duration, function () {
+        cache()->remember('laravel-follow:following.'.$this->id, $duration, function () {
             return $this->getFollowingIds();
         });
     }
 
     /**
      * Caches IDs of the users who are following a user.
-     *
-     * @param  mixed|null  $duration
-     * @return void
      */
     public function cacheFollowers(mixed $duration = null): void
     {
-        $duration ?? Carbon::now()->addDay();
+        $duration = $duration ?? config('laravel-follow.cache_duration', 86400);
 
-        cache()->forget('followers.' . $this->id);
+        cache()->forget('laravel-follow:followers.'.$this->id);
 
-        cache()->remember('followers.' . $this->id, $duration, function () {
+        cache()->remember('laravel-follow:followers.'.$this->id, $duration, function () {
             return $this->getFollowersIds();
         });
     }
 
     /**
      * Returns the cached IDs of the users a user is following.
-     *
-     * @return array
-     *
-     * @throws
      */
     public function getFollowingCache(): array
     {
-        return cache()->get('following.' . $this->id) ?? [];
+        return cache()->get('laravel-follow:following.'.$this->id) ?? [];
     }
 
     /**
-     * Returns the cached IDs of the users who are followers a user.
-     *
-     * @return array
-     *
-     * @throws
+     * Returns the cached IDs of the users who are following a user.
      */
     public function getFollowersCache(): array
     {
-        return cache()->get('followers.' . $this->id) ?? [];
+        return cache()->get('laravel-follow:followers.'.$this->id) ?? [];
     }
 
     /**
      * Clears the Following cache.
-     *
-     * @return void
      */
     public function clearFollowingCache(): void
     {
-        cache()->forget('following.' . $this->id);
+        cache()->forget('laravel-follow:following.'.$this->id);
     }
 
     /**
      * Clears the Followers cache.
-     *
-     * @return void
      */
     public function clearFollowersCache(): void
     {
-        cache()->forget('followers.' . $this->id);
+        cache()->forget('laravel-follow:followers.'.$this->id);
+    }
+
+    /**
+     * Clears the Followers cache for another user.
+     */
+    public function clearFollowersCacheFor(int|Authenticatable $user): void
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id !== null) {
+            cache()->forget('laravel-follow:followers.'.$user_id);
+        }
+    }
+
+    /**
+     * Clears the Following cache for another user.
+     */
+    public function clearFollowingCacheFor(int|Authenticatable $user): void
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id !== null) {
+            cache()->forget('laravel-follow:following.'.$user_id);
+        }
+    }
+
+    /**
+     * Get follow relationships between this user and another user.
+     */
+    public function getFollowRelationshipsWith(int|Authenticatable $user): Collection
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id === null) {
+            return new Collection();
+        }
+
+        return Follow::where(function ($query) use ($user_id) {
+            $query->where('user_id', $this->id)
+                ->where('following_id', $user_id);
+        })->orWhere(function ($query) use ($user_id) {
+            $query->where('user_id', $user_id)
+                ->where('following_id', $this->id);
+        })->get();
+    }
+
+    /**
+     * Get the follow record where this user follows another.
+     */
+    public function getFollowingRelationship(int|Authenticatable $user): ?Follow
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id === null) {
+            return null;
+        }
+
+        return $this->follows()
+            ->where('following_id', $user_id)
+            ->first();
+    }
+
+    /**
+     * Get the follow record where another user follows this user.
+     */
+    public function getFollowerRelationship(int|Authenticatable $user): ?Follow
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id === null) {
+            return null;
+        }
+
+        return $this->followers()
+            ->where('user_id', $user_id)
+            ->first();
     }
 }

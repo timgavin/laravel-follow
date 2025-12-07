@@ -8,20 +8,18 @@ class LaravelFollowServiceProvider extends ServiceProvider
 {
     /**
      * Perform post-registration booting of services.
-     *
-     * @return void
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         $this->publishes([
-            __DIR__.'/../database/migrations' => database_path('migrations')
-        ], 'migrations');
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ], 'laravel-follow-migrations');
 
         $this->publishes([
-            __DIR__.'/../config/laravel-follow.php' => config_path('laravel-follow.php')
-        ], 'config');
+            __DIR__.'/../config/laravel-follow.php' => config_path('laravel-follow.php'),
+        ], 'laravel-follow-config');
 
         if ($this->app->runningInConsole()) {
             $this->bootForConsole();
@@ -30,28 +28,26 @@ class LaravelFollowServiceProvider extends ServiceProvider
 
     /**
      * Register any package services.
-     *
-     * @return void
      */
     public function register(): void
     {
-        //
+        $this->mergeConfigFrom(__DIR__.'/../config/laravel-follow.php', 'laravel-follow');
+
+        $this->app->singleton('laravel-follow', function ($app) {
+            return new LaravelFollowManager();
+        });
     }
 
     /**
      * Get the services provided by the provider.
-     *
-     * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return ['laravel-follow'];
     }
 
     /**
      * Console-specific booting.
-     *
-     * @return void
      */
     protected function bootForConsole(): void
     {

@@ -276,9 +276,9 @@ it('checks if users have any follow relationship', function () {
 
     $user1->follow($user2);
 
-    expect($user1->hasFollowWith($user2))->toBeTrue();
-    expect($user2->hasFollowWith($user1))->toBeTrue();
-    expect($user1->hasFollowWith($user3))->toBeFalse();
+    expect($user1->hasAnyFollowWith($user2))->toBeTrue();
+    expect($user2->hasAnyFollowWith($user1))->toBeTrue();
+    expect($user1->hasAnyFollowWith($user3))->toBeFalse();
 });
 
 it('gets follow relationships between two users', function () {
@@ -602,4 +602,96 @@ it('clears the following cache for another user by id', function () {
     $user2->clearFollowingCacheFor($user1->id);
 
     expect(cache()->has('laravel-follow:following.1'))->toBeFalse();
+});
+
+// New v2.1 tests - Batch query methods
+
+it('gets all follow user ids in single query', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+    $user4 = User::create();
+
+    $user1->follow($user2); // user1 follows user2
+    $user3->follow($user1); // user3 follows user1
+
+    $ids = $user1->getAllFollowUserIds();
+
+    expect($ids)->toContain($user2->id)
+        ->toContain($user3->id)
+        ->not->toContain($user1->id)
+        ->not->toContain($user4->id);
+});
+
+it('returns empty array when no follow relationships exist', function () {
+    $user1 = User::create();
+
+    expect($user1->getAllFollowUserIds())->toBe([]);
+});
+
+it('excludes follow-related users with scope', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+
+    $user1->follow($user2);
+
+    $results = User::query()->excludeFollowRelated($user1)->pluck('id')->toArray();
+
+    expect($results)->toContain($user1->id)
+        ->toContain($user3->id)
+        ->not->toContain($user2->id);
+});
+
+it('excludes users following this user with scope', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+
+    $user2->follow($user1); // user2 follows user1
+
+    $results = User::query()->excludeFollowRelated($user1)->pluck('id')->toArray();
+
+    expect($results)->toContain($user1->id)
+        ->toContain($user3->id)
+        ->not->toContain($user2->id);
+});
+
+it('scope does nothing when user is null', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $results = User::query()->excludeFollowRelated(null)->pluck('id')->toArray();
+
+    expect($results)->toContain($user1->id)
+        ->toContain($user2->id);
+});
+
+it('gets follow status for multiple users in batch', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+    $user3 = User::create();
+    $user4 = User::create();
+
+    $user1->follow($user2);
+    $user3->follow($user1);
+
+    $statuses = $user1->getFollowStatusForUsers([$user2->id, $user3->id, $user4->id]);
+
+    expect($statuses[$user2->id])->toBe(['is_following' => true, 'is_followed_by' => false]);
+    expect($statuses[$user3->id])->toBe(['is_following' => false, 'is_followed_by' => true]);
+    expect($statuses[$user4->id])->toBe(['is_following' => false, 'is_followed_by' => false]);
+});
+
+it('returns empty array for empty user ids array', function () {
+    $user1 = User::create();
+
+    expect($user1->getFollowStatusForUsers([]))->toBe([]);
+});
+
+it('has any follow with returns false when no relationship', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    expect($user1->hasAnyFollowWith($user2))->toBeFalse();
 });

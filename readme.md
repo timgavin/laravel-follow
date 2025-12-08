@@ -108,7 +108,7 @@ auth()->user()->toggleFollow($user);
 ### Check if there is any follow relationship between two users
 
 ```php
-@if (auth()->user()->hasFollowWith($user))
+@if (auth()->user()->hasAnyFollowWith($user))
     There is a follow relationship.
 @endif
 ```
@@ -172,6 +172,39 @@ auth()->user()->getFollowersIds();
 
 ```php
 auth()->user()->getFollowingAndFollowersIds();
+```
+
+### Get all user IDs involved in any follow relationship (single query)
+
+Returns IDs of users you're following AND users following you.
+
+```php
+auth()->user()->getAllFollowUserIds();
+```
+
+### Get follow status for multiple users in batch
+
+Returns status for multiple users in just 2 queries instead of 2N. Useful for API responses.
+
+```php
+$userIds = $users->pluck('id')->toArray();
+$statuses = auth()->user()->getFollowStatusForUsers($userIds);
+
+// Returns: [userId => ['is_following' => bool, 'is_followed_by' => bool]]
+```
+
+## Query Scopes
+
+### Exclude follow-related users from queries
+
+Excludes users involved in any follow relationship with the given user.
+
+```php
+// Exclude users following or followed by the authenticated user
+User::query()->excludeFollowRelated()->get();
+
+// Exclude users following or followed by a specific user
+User::query()->excludeFollowRelated($user)->get();
 ```
 
 ## Relationships

@@ -159,7 +159,7 @@ trait LaravelFollow
     /**
      * Check if there is any follow relationship between this user and another user.
      */
-    public function hasFollowWith(int|Authenticatable $user): bool
+    public function hasAnyFollowWith(int|Authenticatable $user): bool
     {
         $user_id = is_int($user) ? $user : ($user->id ?? null);
 
@@ -269,6 +269,91 @@ trait LaravelFollow
             'following' => $this->getFollowingIds(),
             'followers' => $this->getFollowersIds(),
         ];
+    }
+
+    /**
+     * Returns all user IDs involved in any follow relationship with this user.
+     * Combines both following and followed-by in a single query.
+     */
+    public function getAllFollowUserIds(): array
+    {
+        return Follow::toBase()
+            ->where('user_id', $this->id)
+            ->orWhere('following_id', $this->id)
+            ->get(['user_id', 'following_id'])
+            ->flatMap(fn ($row) => [$row->user_id, $row->following_id])
+            ->reject(fn ($id) => $id === $this->id)
+            ->unique()
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Scope to exclude users involved in any follow relationship with the given user.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int|Authenticatable|null  $user  The user to check follows for (defaults to auth user)
+     */
+    public function scopeExcludeFollowRelated($query, int|Authenticatable|null $user = null): void
+    {
+        $userId = match (true) {
+            is_int($user) => $user,
+            $user instanceof Authenticatable => $user->id,
+            default => auth()->id(),
+        };
+
+        if ($userId === null) {
+            return;
+        }
+
+        $followIds = Follow::toBase()
+            ->where('user_id', $userId)
+            ->orWhere('following_id', $userId)
+            ->get(['user_id', 'following_id'])
+            ->flatMap(fn ($row) => [$row->user_id, $row->following_id])
+            ->reject(fn ($id) => $id === $userId)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        if (! empty($followIds)) {
+            $query->whereNotIn($query->getModel()->getTable().'.id', $followIds);
+        }
+    }
+
+    /**
+     * Get follow status for multiple users in batch.
+     * Returns array keyed by user ID with is_following and is_followed_by flags.
+     *
+     * @param  array<int>  $userIds
+     * @return array<int, array{is_following: bool, is_followed_by: bool}>
+     */
+    public function getFollowStatusForUsers(array $userIds): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+
+        $following = Follow::toBase()
+            ->where('user_id', $this->id)
+            ->whereIn('following_id', $userIds)
+            ->pluck('following_id')
+            ->flip()
+            ->toArray();
+
+        $followedBy = Follow::toBase()
+            ->whereIn('user_id', $userIds)
+            ->where('following_id', $this->id)
+            ->pluck('user_id')
+            ->flip()
+            ->toArray();
+
+        return collect($userIds)->mapWithKeys(fn ($id) => [
+            $id => [
+                'is_following' => isset($following[$id]),
+                'is_followed_by' => isset($followedBy[$id]),
+            ],
+        ])->toArray();
     }
 
     /**

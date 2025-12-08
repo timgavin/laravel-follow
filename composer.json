@@ -1,6 +1,5 @@
 {
     "name": "timgavin/laravel-follow",
-    "version": "2.0.0",
     "description": "A User can follow another User",
     "license": "MIT",
     "authors": [

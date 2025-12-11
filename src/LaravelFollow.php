@@ -357,6 +357,49 @@ trait LaravelFollow
     }
 
     /**
+     * Get follow status for a single user in one query.
+     *
+     * @return array{is_following: bool, is_followed_by: bool}
+     */
+    public function getFollowStatusFor(int|Authenticatable $user): array
+    {
+        $user_id = is_int($user) ? $user : ($user->id ?? null);
+
+        if ($user_id === null) {
+            return [
+                'is_following' => false,
+                'is_followed_by' => false,
+            ];
+        }
+
+        $results = Follow::toBase()
+            ->where(function ($query) use ($user_id) {
+                $query->where('user_id', $this->id)->where('following_id', $user_id);
+            })
+            ->orWhere(function ($query) use ($user_id) {
+                $query->where('user_id', $user_id)->where('following_id', $this->id);
+            })
+            ->get(['user_id', 'following_id']);
+
+        $isFollowing = false;
+        $isFollowedBy = false;
+
+        foreach ($results as $row) {
+            if ($row->user_id == $this->id && $row->following_id == $user_id) {
+                $isFollowing = true;
+            }
+            if ($row->user_id == $user_id && $row->following_id == $this->id) {
+                $isFollowedBy = true;
+            }
+        }
+
+        return [
+            'is_following' => $isFollowing,
+            'is_followed_by' => $isFollowedBy,
+        ];
+    }
+
+    /**
      * Caches IDs of the users a user is following.
      */
     public function cacheFollowing(mixed $duration = null): void

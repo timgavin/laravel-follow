@@ -193,6 +193,16 @@ $statuses = auth()->user()->getFollowStatusForUsers($userIds);
 // Returns: [userId => ['is_following' => bool, 'is_followed_by' => bool]]
 ```
 
+### Get follow status for a single user
+
+Returns bidirectional follow status in a single query. Useful for profile pages.
+
+```php
+$status = auth()->user()->getFollowStatusFor($user);
+
+// Returns: ['is_following' => bool, 'is_followed_by' => bool]
+```
+
 ## Query Scopes
 
 ### Exclude follow-related users from queries

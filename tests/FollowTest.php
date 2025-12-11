@@ -695,3 +695,36 @@ it('has any follow with returns false when no relationship', function () {
 
     expect($user1->hasAnyFollowWith($user2))->toBeFalse();
 });
+
+it('gets follow status for a single user', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    // No relationship
+    $status = $user1->getFollowStatusFor($user2);
+    expect($status['is_following'])->toBeFalse();
+    expect($status['is_followed_by'])->toBeFalse();
+
+    // User1 follows User2
+    $user1->follow($user2);
+    $status = $user1->getFollowStatusFor($user2);
+    expect($status['is_following'])->toBeTrue();
+    expect($status['is_followed_by'])->toBeFalse();
+
+    // Mutual follow
+    $user2->follow($user1);
+    $status = $user1->getFollowStatusFor($user2);
+    expect($status['is_following'])->toBeTrue();
+    expect($status['is_followed_by'])->toBeTrue();
+});
+
+it('gets follow status for a single user by id', function () {
+    $user1 = User::create();
+    $user2 = User::create();
+
+    $user1->follow($user2);
+
+    $status = $user1->getFollowStatusFor($user2->id);
+    expect($status['is_following'])->toBeTrue();
+    expect($status['is_followed_by'])->toBeFalse();
+});
